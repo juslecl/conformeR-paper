@@ -1,0 +1,103 @@
+---
+title: "data_conformeR"
+format: html
+editor: visual
+---
+
+```{r}
+.libPaths(c("~/R/library", .libPaths()))
+library(SingleCellExperiment)
+library(scuttle)
+library(scran)
+```
+
+Aim is to get a simplified version of the sce to include it as data in conformeR package in view of a vignette.
+
+```{r}
+sce <- readRDS("~/sce_5pat_2cond.RDS")
+cat("RDS file size:", 
+    round(object.size(sce) / 1024^2, 2), "MB\n")
+```
+
+Reduce to two patients only.
+
+```{r}
+table(sce$patient_id,sce$condition) |> knitr::kable()
+```
+
+```{r}
+sce_2_pat <- sce[,sce$patient_id %in%c("PW030","PW034")]
+cat("RDS file size:", 
+    round(object.size(sce_2_pat) / 1024^2, 2), "MB\n")
+```
+
+Reduce to three cell-types only.
+
+```{r}
+table(sce_2_pat$patient_id,sce_2_pat$cell_type) |> knitr::kable()
+```
+
+```{r}
+sce_2_pat_3ct <-sce_2_pat[,sce_2_pat$cell_type != "T cells"]
+cat("RDS file size:", 
+    round(object.size(sce_2_pat_3ct) / 1024^2, 2), "MB\n")
+```
+
+Keep only logcounts assay and needed information for colData.
+
+```{r}
+colData(sce_2_pat_3ct) <- colData(sce_2_pat_3ct)[, c(
+  "cell_type",
+  "condition",
+  "patient_id"
+), drop = FALSE]
+
+cat("RDS file size:", 
+    round(object.size(sce_2_pat_3ct) / 1024^2, 2), "MB\n")
+```
+
+Remove useless rowData and reducedDimNames we will anyway compute later.
+
+```{r}
+rowData(sce_2_pat_3ct) <- rowData(sce_2_pat_3ct)[, c(
+  "gid",
+  "gene"
+), drop = FALSE]
+
+cat("RDS file size:", 
+    round(object.size(sce_2_pat_3ct) / 1024^2, 2), "MB\n")
+```
+
+```{r}
+reducedDim(sce_2_pat_3ct, "PCA") <- NULL
+reducedDim(sce_2_pat_3ct, "UMAP") <- NULL
+reducedDim(sce_2_pat_3ct, "harmony_umap") <- NULL
+reducedDim(sce_2_pat_3ct, "harmony") <- NULL
+
+cat("RDS file size:", 
+    round(object.size(sce_2_pat_3ct) / 1024^2, 2), "MB\n")
+```
+
+Reduce to top 3000 HVGs.
+
+```{r}
+set.seed(1)
+dec <- modelGeneVar(sce_2_pat_3ct)
+hvgs <- getTopHVGs(dec, n = 3000)
+sce_2_pat_3ct <- sce_2_pat_3ct[hvgs, ]
+
+cat("RDS file size:", 
+    round(object.size(sce_2_pat_3ct) / 1024^2, 2), "MB\n")
+```
+
+Reduce to 20k cells.
+
+```{r}
+set.seed(1)
+sce_vignette <- sce_2_pat_3ct[, sample(ncol(sce_2_pat_3ct), 10000)]
+
+cat("RDS file size:", 
+    round(object.size(sce_vignette) / 1024^2, 2), "MB\n")
+
+saveRDS(sce_vignette, "conformeR_example.rds")
+```

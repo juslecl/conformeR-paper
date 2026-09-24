@@ -14,6 +14,7 @@ pred_set_10 <- readRDS("~/pred_set_pan10.rds")
 pred_set_11 <- readRDS("~/pred_set_pan11.rds")
 
 reducedDim(fit10, "fit_al_umap")[,1] <- -reducedDim(fit10, "fit_al_umap")[,1]
+reducedDim(fit11, "fit_al_umap")[,1] <- -reducedDim(fit11, "fit_al_umap")[,1]
 
 genes_of_interest <- rowData(fit10) %>%
   as_tibble() %>%
@@ -133,6 +134,9 @@ plot_umap_simple <- function(fit, nei, pred_set) {
         )
       ) +
       theme(
+        panel.background = element_rect(fill = "white", colour = NA),
+        plot.background = element_rect(fill = "white", colour = NA),
+        strip.background = element_rect(fill = "white", colour = NA),
         strip.text.x = element_text(size = 20),
         strip.text.y = element_text(
           size = 20,
@@ -140,7 +144,7 @@ plot_umap_simple <- function(fit, nei, pred_set) {
         ),
         strip.placement = "outside",
         axis.text = element_text(size = 18),
-        panel.spacing.x = unit(8, "mm"),
+        panel.spacing.x = unit(12, "mm"),
         panel.spacing.y = unit(4, "mm"),
         legend.text = element_text(size = 18),
         legend.key.width = unit(1, "cm"),
@@ -156,5 +160,5 @@ plot_umap_simple <- function(fit, nei, pred_set) {
   )
 }
 
-plot_seed10 <- plot_umap_simple(fit10, nei10, pred_set10) 
-plot_seed11 <- plot_umap_simple(fit11, nei11, pred_set11) 
+plot_seed10 <- plot_umap_simple(fit10, nei10, pred_set_10) 
+plot_seed11 <- plot_umap_simple(fit11, nei11, pred_set_11) 
