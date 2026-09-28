@@ -30,8 +30,8 @@ ggplot(ct_plot_data, aes(x = V1, y = V2)) +
       stroke = 0
     )
   ) +
-  scale_x_continuous(limits = range(umap_fit[, 1]) * 1.1) +
-  scale_y_continuous(limits = range(umap_fit[, 2]) * 1.1) +
+  scale_x_continuous(limits = range(umap_fit[, 1]) * 1.5) +
+  scale_y_continuous(limits = range(umap_fit[, 2]) * 1.5) +
   scale_color_brewer(palette = "Set2") +
   coord_fixed() +
   facet_wrap(~`Cell-type`) +
@@ -41,14 +41,15 @@ ggplot(ct_plot_data, aes(x = V1, y = V2)) +
     ylim = range(umap_fit[, 2]),
     arrow_length = 6
   ) +
+  guides(color = guide_legend(override.aes = list(alpha = 1, size = 3))) +
   theme_void(base_size = 14) +
   theme(
     axis.text = element_blank(),
     axis.ticks = element_blank(),
     legend.position = "none",
     strip.text = element_text(
-      size = 20,
-      margin = margin(b = 10)
+      size = 16,
+      margin = margin(b = 20)
     ),
     strip.background = element_blank(),
     panel.background = element_rect(
@@ -56,6 +57,7 @@ ggplot(ct_plot_data, aes(x = V1, y = V2)) +
       colour = NA
     ),
     panel.grid = element_blank(),
-    panel.spacing = grid::unit(1, "lines"),
+    panel.spacing.x = grid::unit(3, "lines"),
+    panel.spacing.y = grid::unit(1, "lines"),
     plot.margin = margin(10, 10, 10, 10)
   )
