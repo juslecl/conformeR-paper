@@ -52,7 +52,7 @@ ggplot2::ggplot(
     colour = "|LFC|"
   ) +
   ggplot2::scale_x_continuous(
-    breaks = sort(unique(res_cc$eps))
+    breaks = seq(0, 1, 0.05)
   ) +
   ggplot2::scale_y_continuous(
     limits = c(0.95, 1),
@@ -86,7 +86,7 @@ ggplot2::ggplot(
     y = "Marginal coverage"
   ) +
   ggplot2::scale_x_continuous(
-    breaks = sort(unique(res_cc$eps))
+    breaks = seq(0, 1, 0.05)
   ) +
   ggplot2::scale_y_continuous(
     limits = c(0.95, 1),
