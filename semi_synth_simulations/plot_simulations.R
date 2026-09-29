@@ -35,14 +35,13 @@ res_cc <- outputs_cc |>
     .groups = "drop"
   )
 
-
 ggplot2::ggplot(
   res_cc,
   ggplot2::aes(
     x = eps,
     y = mean_cov,
-    group = factor(abs(lfc)),
-    colour = factor(abs(lfc))
+    group = factor(`abs(lfc)`),
+    colour = factor(`abs(lfc)`)
   )
 ) +
   ggplot2::geom_line(linewidth = 1) +
@@ -51,6 +50,40 @@ ggplot2::ggplot(
     x = expression(epsilon),
     y = "Marginal coverage",
     colour = "|LFC|"
+  ) +
+  ggplot2::scale_x_continuous(
+    breaks = sort(unique(res_cc$eps))
+  ) +
+  ggplot2::scale_y_continuous(
+    limits = c(0.95, 1),
+    breaks = seq(0.95, 1, 0.01)
+  ) +
+  ggplot2::geom_hline(
+    yintercept = 0.95,
+    linetype = "dashed",
+    colour = "black"
+  ) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 16),
+    axis.title = ggplot2::element_text(size = 18),
+    legend.text = ggplot2::element_text(size = 16),
+    legend.title = ggplot2::element_text(size = 18)
+  )
+
+res_cc <- res_cc |> dplyr::group_by(eps) |> dplyr::summarize(mean_cov=mean(mean_cov))
+ggplot2::ggplot(
+  res_cc,
+  ggplot2::aes(
+    x = eps,
+    y = mean_cov
+  )
+) +
+  ggplot2::geom_line(linewidth = 1) +
+  ggplot2::geom_point(size = 2.5) +
+  ggplot2::labs(
+    x = expression(epsilon),
+    y = "Marginal coverage"
   ) +
   ggplot2::scale_x_continuous(
     breaks = sort(unique(res_cc$eps))
@@ -104,34 +137,26 @@ outputs_cs <- lapply(seq_len(50), function(i) {
 
 res_cs <- outputs_cs |>
   tidyr::pivot_longer(
-    cols = c(TPR_cs, FDR_cs, TPR_adj_cs, FDR_adj_cs),
+    cols = c(TPR_cs, FDR_cs),
     names_to = c("metric", "method"),
     names_pattern = "^(TPR|FDR)_(.*)$",
     values_to = "value"
   ) |>
-  dplyr::mutate(
-    method = dplyr::recode(
-      method,
-      cs = "CS",
-      adj_cs = "CS shifted p-val"
-    )
-  ) |>
   dplyr::filter(lfc != 0) |>
-  dplyr::group_by(abs(lfc), eps, method, metric) |>
+  dplyr::group_by(abs(lfc), eps, metric) |>
   dplyr::summarise(
     mean_val = mean(value),
     .groups = "drop"
   )
-
 
 ggplot2::ggplot(
   res_cs,
   ggplot2::aes(
     x = eps,
     y = mean_val,
-    colour = interaction(method, metric),
-    group = interaction(method, metric, abs(lfc)),
-    linetype = factor(abs(lfc))
+    colour = metric,
+    group = interaction(metric, `abs(lfc)`),
+    linetype = factor(`abs(lfc)`)
   )
 ) +
   ggplot2::geom_line(linewidth = 1) +
@@ -144,7 +169,45 @@ ggplot2::ggplot(
   ggplot2::labs(
     x = expression(epsilon),
     y = NULL,
-    colour = "Method / metric",
+    colour = "Metric",
     linetype = "|LFC|"
   ) +
-  ggplot2::theme_bw()
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    text = ggplot2::element_text(size = 14),
+    axis.text = ggplot2::element_text(size = 14),
+    axis.title = ggplot2::element_text(size = 16),
+    legend.text = ggplot2::element_text(size = 14),
+    legend.title = ggplot2::element_text(size = 15)
+  )
+
+res_cs <- res_cs |> dplyr::group_by(eps,metric) |> dplyr::summarize(mean_val=mean(mean_val))
+
+ggplot2::ggplot(
+  res_cs,
+  ggplot2::aes(
+    x = eps,
+    y = mean_val,
+    colour = metric
+  )
+) +
+  ggplot2::geom_line(linewidth = 1) +
+  ggplot2::geom_point(size = 2.5) +
+  ggplot2::geom_hline(
+    yintercept = 0.05,
+    linetype = "dashed",
+    colour = "black"
+  ) +
+  ggplot2::labs(
+    x = expression(epsilon),
+    y = NULL,
+    colour = "Method / metric"
+  ) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    text = ggplot2::element_text(size = 14),
+    axis.text = ggplot2::element_text(size = 14),
+    axis.title = ggplot2::element_text(size = 16),
+    legend.text = ggplot2::element_text(size = 14),
+    legend.title = ggplot2::element_text(size = 15)
+  )

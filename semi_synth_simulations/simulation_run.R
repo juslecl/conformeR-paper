@@ -76,7 +76,7 @@ sim_analysis <- function(sce, epsilon, gene_batch_size = 7,seed=seed) {
         pred_cal_chunk   <- pred_cal[chunk_genes, ]
         pred_test_chunk  <- pred_test[chunk_genes, ]
         
-        chunk_res <- conf_layer_shifted(
+        chunk_res <- conf_layer(
           pred_train_chunk,
           pred_cal_chunk,
           pred_test_chunk

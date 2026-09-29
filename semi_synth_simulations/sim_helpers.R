@@ -72,7 +72,6 @@ fdr_tpr_rate_cs <- function(output, fit) {
   res <- lapply(seq_len(nrow(gt)), function(gene_idx) {
     
     truth <- gt$is_de_cell[[gene_idx]]
-    pred_adj <- gt[["cs_list_adj"]][[gene_idx]]
     pred <- gt[["cs_list"]][[gene_idx]]
     lfc <- gt$lfc[[gene_idx]]
     
@@ -94,38 +93,10 @@ fdr_tpr_rate_cs <- function(output, fit) {
       length(setdiff(truth, pred))
     }
     
-    TP_adj <- if (lfc == 0) {
-      0
-    } else {
-      length(intersect(pred_adj, truth))
-    }
-    
-    FP_adj <- if (lfc == 0) {
-      length(pred_adj)
-    } else {
-      length(setdiff(pred_adj, truth))
-    }
-    
-    FN_adj <- if (lfc == 0) {
-      0
-    } else {
-      length(setdiff(truth, pred_adj))
-    }
-    
     data.frame(
       name = gt$name[gene_idx],
       TPR = if ((TP + FN) == 0) NA_real_ else TP / (TP + FN),
       FDR = if ((TP + FP) == 0) 0 else FP / (TP + FP),
-      TPR_adj = if ((TP_adj + FN_adj) == 0) {
-        NA_real_
-      } else {
-        TP_adj / (TP_adj + FN_adj)
-      },
-      FDR_adj = if ((TP_adj + FP_adj) == 0) {
-        0
-      } else {
-        FP_adj / (TP_adj + FP_adj)
-      },
       lfc = gt$lfc[[gene_idx]],
       size = gt$de_size[[gene_idx]]
     )
@@ -133,7 +104,7 @@ fdr_tpr_rate_cs <- function(output, fit) {
   
   res <- dplyr::bind_rows(res)
   
-  metric_cols <- c("TPR", "FDR", "TPR_adj", "FDR_adj")
+  metric_cols <- c("TPR", "FDR")
   
   names(res)[match(metric_cols, names(res))] <-
     paste0(metric_cols, "_cs")
@@ -184,7 +155,7 @@ fdr_tpr_rate_cc <- function(output, fit) {
 }
 
 
-conf_layer_shifted <- function(pred_train, pred_cal, pred_test) {
+conf_layer <- function(pred_train, pred_cal, pred_test) {
   
   genes <- SummarizedExperiment::rowData(pred_train)$name
   
@@ -427,33 +398,7 @@ conf_layer_shifted <- function(pred_train, pred_cal, pred_test) {
       cal_scores <- score_cal$scores_cal[
         score_cal$gene == current_gene
       ]
-      
-      corrup_shift <-
-        SummarizedExperiment::rowData(
-          pred_cal
-        )$corrup_rate[[gene]] / 2
-      
-      p1 <- vapply(
-        scores_test[[gene]][, 1],
-        function(score) {
-          min(
-            1,
-            (
-              (
-                sum(cal_scores < score) +
-                  runif(
-                    1
-                  ) * (1 + sum(cal_scores == score))
-              ) /
-                (ncol(pred_cal) + 1)
-            ) +
-              corrup_shift
-          )
-        },
-        numeric(1)
-      )
-      
-      p2 <- vapply(
+      p <- vapply(
         scores_test[[gene]][, 1],
         function(score) {
           (
@@ -468,8 +413,7 @@ conf_layer_shifted <- function(pred_train, pred_cal, pred_test) {
       )
       
       cbind.data.frame(
-        conformal_p_val_adj = p1,
-        conformal_p_val = p2,
+        conformal_p_val = p,
         cell = colnames(pred_test)
       )
     }
@@ -484,10 +428,6 @@ conf_layer_shifted <- function(pred_train, pred_cal, pred_test) {
       
       df |>
         dplyr::mutate(
-          inside_cs_adj = stats::p.adjust(
-            as.numeric(conformal_p_val_adj),
-            method = "BH"
-          ) < alpha,
           inside_cs = stats::p.adjust(
             as.numeric(conformal_p_val),
             method = "BH"
