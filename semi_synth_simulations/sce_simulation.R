@@ -17,7 +17,7 @@ sce_simulation <- function(
     replace = TRUE
   )
   
-  sce$sample <- sce$patient_id
+  sce$sample <- sce[[sample_column]]
   
   # Generate DE
   set.seed(seed)
@@ -74,10 +74,13 @@ sce_simulation <- function(
   for (idx in seq_len(n_de_genes)) {
     
     gv <- generate_gene_for_cluster(
+      sce = sce,
+      pca = pca,
+      kmeans_obj = kmeans_clusterings,
       n_clusters = de_args$cut_at[idx],
       base_expr = de_args$base_expr[idx],
       lfc_mean = de_args$lfc[idx],
-      lfc_sd = 0,
+      lfc_sd = lfc_sd,
       sample_sd = 0.1,
       overdispersion = 0.2
     )
@@ -122,20 +125,23 @@ sce_simulation <- function(
 
 
 generate_gene_for_cluster <- function(
+    sce,
+    pca,
+    kmeans_obj,
     n_clusters = 10,
     base_expr = -2,
-    lfc_mean = lfc_mean,
-    lfc_sd = lfc_sd,
+    lfc_mean,
+    lfc_sd,
     sample_sd = 0.1,
     overdispersion = 0.1,
     ...
 ) {
   
   cluster_assign <- if (
-    as.character(n_clusters) %in% names(kmeans_clusterings)
+    as.character(n_clusters) %in% names(kmeans_obj)
   ) {
     
-    kmeans_clusterings[[as.character(n_clusters)]]
+    kmeans_obj[[as.character(n_clusters)]]
     
   } else {
     
@@ -144,8 +150,6 @@ generate_gene_for_cluster <- function(
       centers = n_clusters
     )$cluster
   }
-  
-  set.seed(seed)
   
   sel_cluster <- sample(
     unique(cluster_assign),

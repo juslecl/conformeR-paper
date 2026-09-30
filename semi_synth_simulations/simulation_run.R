@@ -1,7 +1,7 @@
 library(SingleCellExperiment)
 library(tidyverse)
 library(lemur)
-library(SingleCellExperiment)
+library(BiocParallel)
 source("~/conformeR-paper/semi_synth_simulations/sce_simulation.R")
 source("~/conformeR-paper/semi_synth_simulations/sim_helpers.R")
 
@@ -33,7 +33,7 @@ sim_analysis <- function(sce, epsilon, gene_batch_size = 7,seed=seed) {
     rowData(fit)$is_de_cell[rowData(fit)$lfc==0] <- list(rep(FALSE,ncol(fit)))
     set.seed(seed)
     
-    split <- conformeR::data_processing(fit, "sample", "fake_condition")
+    split <- conformeR::data_processing(fit, strat_by=c("sample", "fake_condition"))
     
     pred_train <- split$train
     pred_cal <- split$cal
@@ -94,7 +94,6 @@ sim_analysis <- function(sce, epsilon, gene_batch_size = 7,seed=seed) {
       dplyr::summarize(cc_list=list(cell[inside_cc]),
                        cc_list_out=list(cell[outside_cc]),
                        cs_list=list(cell[inside_cs]),
-                       cs_list_adj=list(cell[inside_cs_adj]),
                        .groups="drop") 
     
     pred_test_small <- pred_test[genes_of_interest, ]
