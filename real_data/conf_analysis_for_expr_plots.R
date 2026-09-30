@@ -114,5 +114,5 @@ chunk_results <- BiocParallel::bplapply(seq_along(gene_chunks), function(i) {
     dplyr::group_by(gene) |>
     dplyr::summarize(cs_list = list(cell[inside_cs]), .groups = "drop")
   
-  saveRDS(pred_set_all, paste0(home_dir, "/results", i, ".rds"))
+  saveRDS(pred_set_all, paste0("results", i, ".rds"))
 }, BPPARAM = param)
