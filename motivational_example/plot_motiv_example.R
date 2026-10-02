@@ -1,4 +1,3 @@
-.libPaths(c("~/R/library", .libPaths()))
 library(tidyverse)
 library(glue)
 library(SingleCellExperiment)
@@ -6,12 +5,12 @@ library(lemur)
 source("~/conformeR-paper/util.R")
 
 # Load data.
-fit10 <- readRDS("~/fitseed10_standard.rds")
-fit11 <- readRDS("~/fitseed11_standard.rds")
-nei10 <- readRDS("~/nei_standard10.rds")
-nei11 <- readRDS("~/nei_standard11.rds")
-pred_set_10 <- readRDS("~/pred_set_pan10.rds")
-pred_set_11 <- readRDS("~/pred_set_pan11.rds")
+fit10 <- readRDS("fitseed11_standard.rds")
+fit11 <- readRDS("fitseed10_standard.rds")
+nei10 <- readRDS("nei10_standard.rds")
+nei11 <- readRDS("nei11_standard.rds")
+pred_set_10 <- readRDS("pred_set_pan10.rds")
+pred_set_11 <- readRDS("pred_set_pan11.rds")
 
 reducedDim(fit10, "fit_al_umap")[,1] <- -reducedDim(fit10, "fit_al_umap")[,1]
 reducedDim(fit11, "fit_al_umap")[,1] <- -reducedDim(fit11, "fit_al_umap")[,1]
@@ -29,7 +28,7 @@ plot_umap_simple <- function(fit, nei, pred_set) {
   nei <- nei |>
     dplyr::filter(name %in% genes_of_interest$gid) |>
     mutate(
-      neighborhood = map(neighborhood, ~ colnames(fit) %in% .x)
+      neighborhood = purrr::map(neighborhood, ~ colnames(fit_small) %in% .x)
     ) |>
     dplyr::select(name, neighborhood) |>
     unnest(neighborhood) |>
@@ -46,7 +45,7 @@ plot_umap_simple <- function(fit, nei, pred_set) {
   ) |>
     mutate(
       umap = umap_fit,
-      de = as_tibble(t(assay(fit_small, "DE_panobinostat")))
+      de = as_tibble(t(assay(fit_small, "DE")))
     ) |>
     unnest(de, names_sep = "-") |>
     pivot_longer(
@@ -87,15 +86,13 @@ plot_umap_simple <- function(fit, nei, pred_set) {
     abs_max <- max(abs(quantile(data$de, c(0.95, 0.05))))
     
     ggplot(data, aes(x = umap[, 1], y = umap[, 2])) +
-      ggrastr::rasterise(
         geom_point(
           aes(
             color = de,
             alpha = scales::rescale(abs(de), to = c(0.05, 1))
           ),
           size = 0.5
-        )
-      ) +
+        ) +
       scale_alpha_identity() +
       scale_color_de_gradient(
         abs_max,

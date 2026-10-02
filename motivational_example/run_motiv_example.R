@@ -1,4 +1,3 @@
-.libPaths(c("~/R/library", .libPaths()))
 library(tidyverse)
 library(glue)
 library(SingleCellExperiment)
@@ -18,15 +17,15 @@ library(BiocParallel)
 library(conformeR)
 
 # LOAD DATA
-sce_full <- readRDS("~/sce_5pat_2cond.RDS")
+sce_xxl <- readRDS("sce_5pat_2cond.RDS")
 pan_affect_genes <- c("HBEGF", "MBP")
-pan_genes <- rowData(sce_full) |>
+pan_genes <- rowData(sce_xxl) |>
   as.data.frame() |>
   dplyr::select(gene, gid) |>
   dplyr::filter(gene %in% c(pan_affect_genes))
 
 # RUN ONE SEED
-run_replication <- function(seed, sce_full=sce_full, genes_of_interest=pan_genes$gid, obs_condition="condition",
+run_replication <- function(seed, sce_full=sce_xxl, genes_of_interest=pan_genes$gid, obs_condition="condition",
                             replicate_id="patient_id", gene_batch_size = 7) {
   result <- tryCatch({
     colData_df <- as.data.frame(colData(sce_full)) |>
@@ -38,17 +37,22 @@ run_replication <- function(seed, sce_full=sce_full, genes_of_interest=pan_genes
     split1 <- initial_split(colData_df, prop = .8, strata = strata)
     select_idx <- training(split1)$row
     sce <- sce_full[, select_idx]
+    
     set.seed(seed)
     conformeR::conformeR(sce,
-                         design_lemur = patient_id+condition,
+                         n_embedding = 60,
+                         design_lemur = ~ patient_id+condition,
                          contrast_column = "condition",
-                         genes_of_interest = genes_of_interest)
-
+                         genes_of_interest = genes_of_interest,
+                         test_fraction_lemur = 0.5)
+    
   }, error = function(e) {
     list(seed = seed, status = "error", message = conditionMessage(e))
   })
-
-  result
+  print(result)
+  saveRDS(result$fit_lemur, paste0("fitseed",seed,"_standard.rds"))
+  saveRDS(result$nei_lemur, paste0("nei",seed,"_standard.rds"))
+  saveRDS(result$conf_results, paste0("pred_set_pan",seed,".rds"))
 }
 
 seeds <- c(10,11)
@@ -57,10 +61,3 @@ results <- lapply(
   seeds,
   function(s) run_replication(seed=s)
 )
-
-saveRDS(results[[1]]$fit_lemur, "fitseed10_standard.rds")
-saveRDS(results[[1]]$nei_lemur, "neiseed10_standard.rds")
-saveRDS(results[[1]]$conf_results, "pred_set_pan10.rds")
-saveRDS(results[[2]]$fit_lemur, "fitseed11_standard.rds")
-saveRDS(results[[2]]$nei_lemur, "neiseed11_standard.rds")
-saveRDS(results[[2]]$conf_results, "pred_set_pan11.rds")

@@ -156,7 +156,6 @@ fdr_tpr_rate_cc <- function(output, fit) {
 
 
 conf_layer <- function(pred_train, pred_cal, pred_test) {
-  
   genes <- SummarizedExperiment::rowData(pred_train)$name
   
   softies <- lapply(

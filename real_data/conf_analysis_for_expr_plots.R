@@ -13,7 +13,7 @@ gene_batch_size <- 7
 ################################################################################
 obs_condition <- "condition"
 replicate_id  <- "patient_id"
-set.seed(2)
+set.seed(2002)
 fit <- lemur::lemur(
   sce,
   design = ~ condition + patient_id,
@@ -68,7 +68,7 @@ saveRDS(nei_test, "nei.rds")
 
 gene_chunks <- split(all_genes, ceiling(seq_along(all_genes) / gene_batch_size))
 
-set.seed(2)
+set.seed(2002)
 
 param <- BiocParallel::MulticoreParam(workers = 7)
 
