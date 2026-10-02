@@ -5,15 +5,14 @@ library(lemur)
 source("~/conformeR-paper/util.R")
 
 # Load data.
-fit10 <- readRDS("fitseed11_standard.rds")
-fit11 <- readRDS("fitseed10_standard.rds")
-nei10 <- readRDS("nei10_standard.rds")
+fit4 <- readRDS("fitseed4_standard.rds")
+fit11 <- readRDS("fitseed11_standard.rds")
+nei4 <- readRDS("nei4_standard.rds")
 nei11 <- readRDS("nei11_standard.rds")
-pred_set_10 <- readRDS("pred_set_pan10.rds")
+pred_set_4 <- readRDS("pred_set_pan4.rds")
 pred_set_11 <- readRDS("pred_set_pan11.rds")
 
-reducedDim(fit10, "fit_al_umap")[,1] <- -reducedDim(fit10, "fit_al_umap")[,1]
-reducedDim(fit11, "fit_al_umap")[,1] <- -reducedDim(fit11, "fit_al_umap")[,1]
+reducedDim(fit4, "fit_al_umap")[,2] <- -reducedDim(fit4, "fit_al_umap")[,2]
 
 genes_of_interest <- rowData(fit10) %>%
   as_tibble() %>%
@@ -32,12 +31,12 @@ plot_umap_simple <- function(fit, nei, pred_set) {
     ) |>
     dplyr::select(name, neighborhood) |>
     unnest(neighborhood) |>
-    mutate(cell = rep(colnames(fit), nrow(genes_of_interest))) |>
+    mutate(cell = rep(colnames(fit_small), nrow(genes_of_interest))) |>
     left_join(genes_of_interest, by = c("name" = "gid"))
   
   selection <- pred_set |>
     dplyr::filter(gene %in% genes_of_interest$gid) |>
-    left_join(nei, by = c("cell", "gene" = "name"))
+    dplyr::left_join(nei, by = c("cell", "gene" = "name"))
   
   de_plot_data <- as_tibble(
     colData(fit_small),
@@ -86,13 +85,13 @@ plot_umap_simple <- function(fit, nei, pred_set) {
     abs_max <- max(abs(quantile(data$de, c(0.95, 0.05))))
     
     ggplot(data, aes(x = umap[, 1], y = umap[, 2])) +
-        geom_point(
-          aes(
-            color = de,
-            alpha = scales::rescale(abs(de), to = c(0.05, 1))
-          ),
-          size = 0.5
-        ) +
+      geom_point(
+        aes(
+          color = de,
+          alpha = scales::rescale(abs(de), to = c(0.05, 1))
+        ),
+        size = 0.5
+      ) +
       scale_alpha_identity() +
       scale_color_de_gradient(
         abs_max,
@@ -157,5 +156,5 @@ plot_umap_simple <- function(fit, nei, pred_set) {
   )
 }
 
-plot_seed10 <- plot_umap_simple(fit10, nei10, pred_set_10) 
 plot_seed11 <- plot_umap_simple(fit11, nei11, pred_set_11) 
+plot_seed4 <- plot_umap_simple(fit4, nei4, pred_set_4) 

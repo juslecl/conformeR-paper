@@ -18,7 +18,7 @@ library(conformeR)
 
 # LOAD DATA
 sce_xxl <- readRDS("sce_5pat_2cond.RDS")
-pan_affect_genes <- c("HBEGF", "MBP")
+pan_affect_genes <- c("HBEGF", "MBP", "HIST3H2A","SPATA13")
 pan_genes <- rowData(sce_xxl) |>
   as.data.frame() |>
   dplyr::select(gene, gid) |>
@@ -49,13 +49,12 @@ run_replication <- function(seed, sce_full=sce_xxl, genes_of_interest=pan_genes$
   }, error = function(e) {
     list(seed = seed, status = "error", message = conditionMessage(e))
   })
-  print(result)
   saveRDS(result$fit_lemur, paste0("fitseed",seed,"_standard.rds"))
   saveRDS(result$nei_lemur, paste0("nei",seed,"_standard.rds"))
   saveRDS(result$conf_results, paste0("pred_set_pan",seed,".rds"))
 }
 
-seeds <- c(10,11)
+seeds <- c(4,11)
 
 results <- lapply(
   seeds,
