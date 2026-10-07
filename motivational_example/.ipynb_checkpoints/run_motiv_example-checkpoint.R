@@ -1,0 +1,62 @@
+library(tidyverse)
+library(glue)
+library(SingleCellExperiment)
+library(lemur)
+library(rsample)
+library(rlang)
+library(simdata)
+library(scater)
+library(scuttle)
+library(scran)
+library(MASS)
+library(tidyr)
+library(tibble)
+library(purrr)
+library(scales)
+library(BiocParallel)
+library(conformeR)
+
+# LOAD DATA
+sce_xxl <- readRDS("sce_5pat_2cond.RDS")
+pan_affect_genes <- c("HBEGF", "MBP", "HIST3H2A","SPATA13")
+pan_genes <- rowData(sce_xxl) |>
+  as.data.frame() |>
+  dplyr::select(gene, gid) |>
+  dplyr::filter(gene %in% c(pan_affect_genes))
+
+# RUN ONE SEED
+run_replication <- function(seed, sce_full=sce_xxl, genes_of_interest=pan_genes$gid, obs_condition="condition",
+                            replicate_id="patient_id", gene_batch_size = 7) {
+  result <- tryCatch({
+    colData_df <- as.data.frame(colData(sce_full)) |>
+      dplyr::mutate(
+        row = seq_len(nrow(colData(sce_full))),
+        strata = interaction(colData(sce_full)[[obs_condition]], colData(sce_full)[[replicate_id]])
+      )
+    set.seed(seed)
+    split1 <- initial_split(colData_df, prop = .8, strata = strata)
+    select_idx <- training(split1)$row
+    sce <- sce_full[, select_idx]
+    
+    set.seed(seed)
+    conformeR::conformeR(sce,
+                         n_embedding = 60,
+                         design_lemur = ~ patient_id+condition,
+                         contrast_column = "condition",
+                         genes_of_interest = genes_of_interest,
+                         test_fraction_lemur = 0.5)
+    
+  }, error = function(e) {
+    list(seed = seed, status = "error", message = conditionMessage(e))
+  })
+  saveRDS(result$fit_lemur, paste0("fitseed",seed,"_standard.rds"))
+  saveRDS(result$nei_lemur, paste0("nei",seed,"_standard.rds"))
+  saveRDS(result$conf_results, paste0("pred_set_pan",seed,".rds"))
+}
+
+seeds <- c(4,11)
+
+results <- lapply(
+  seeds,
+  function(s) run_replication(seed=s)
+)
