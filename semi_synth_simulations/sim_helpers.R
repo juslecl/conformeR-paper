@@ -335,7 +335,8 @@ conf_layer <- function(pred_train, pred_cal, pred_test) {
       ) |>
         dplyr::mutate(
           cell = colnames(pred_test),
-          gene = genes[row]
+          gene = genes[row],
+          conf_q=q
         )
     }
   )

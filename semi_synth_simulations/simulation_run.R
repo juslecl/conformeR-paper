@@ -94,11 +94,13 @@ sim_analysis <- function(sce, epsilon, gene_batch_size = 7,seed=seed) {
       dplyr::summarize(cc_list=list(cell[inside_cc]),
                        cc_list_out=list(cell[outside_cc]),
                        cs_list=list(cell[inside_cs]),
+                       q=mean(conf_q),
                        .groups="drop") 
     
     pred_test_small <- pred_test[genes_of_interest, ]
     res <- fdr_tpr_rate_cs(pred_set_all, pred_test_small)
     res2 <- fdr_tpr_rate_cc(pred_set_all, pred_test_small)
+    saveRDS(pred_set_all, paste0("results_xl", args[1] ,"eps",epsilon,".rds"))
     saveRDS(res, paste0("results_cs", args[1] ,"eps",epsilon,".rds"))
     saveRDS(res2, paste0("results_cc", args[1] ,"eps",epsilon,".rds"))
     list(seed = seed, status = "ok")
