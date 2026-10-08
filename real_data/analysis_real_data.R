@@ -113,6 +113,13 @@ chunk_results <- BiocParallel::bplapply(seq_along(gene_chunks), function(i) {
 pred_set_all <- dplyr::bind_rows(chunk_results)
 saveRDS(pred_set_all, "pred_set_realdata.RDS")
 
+pred_set_all |> 
+  dplyr::group_by(gene) |> 
+  dplyr::summarize(prop_empty=mean(inside_cc+outside_cc==0),
+                   prop_singleton=mean(inside_cc+outside_cc==1),
+                   prop_size2=mean(inside_cc+outside_cc==2),
+                   conf_quantile=unique(conf_quantile))
+
 reducedDim(pred_test, "fit_al_umap")[,2] <- -reducedDim(pred_test, "fit_al_umap")[,2]
 
 plot_cs <- conformeR::plotter_conformal_selection(list(fit_lemur=pred_test[all_genes,],nei_lemur=nei_test |> dplyr::filter(name %in% all_genes), conf_results=pred_set_all), all_genes)
