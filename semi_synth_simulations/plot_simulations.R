@@ -66,13 +66,20 @@ ggplot2::ggplot(
   ggplot2::scale_y_continuous(breaks = seq(0.94, 1, 0.01)) +
   ggplot2::coord_cartesian(ylim = c(0.94, 1)) +
   ggplot2::geom_hline(yintercept = 0.95, linetype = "dashed", colour = "black") +
-  ggplot2::theme_bw() +
-  ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 16),
-    axis.title = ggplot2::element_text(size = 18),
-    legend.text = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 18)
-  )
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 16),
+    axis.title.x = element_text(size = 18),
+    axis.title.y = element_text(size = 18),
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 18),
+    panel.background = element_rect(fill = "white", colour = NA),
+    plot.background = element_rect(fill = "white", colour = NA),
+    panel.grid.major = element_line(colour = "grey80"),
+    panel.grid.minor = element_line(colour = "grey90"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_blank()
+  ) 
 
 # Overall (all |lfc| pooled): average over genes within seed, then across seeds
 cc_per_seed_all <- outputs_cc |>
@@ -107,13 +114,20 @@ ggplot2::ggplot(
   ggplot2::scale_y_continuous(breaks = seq(0.94, 1, 0.01)) +
   ggplot2::coord_cartesian(ylim = c(0.94, 1)) +
   ggplot2::geom_hline(yintercept = 0.95, linetype = "dashed", colour = "black") +
-  ggplot2::theme_bw() +
-  ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 16),
-    axis.title = ggplot2::element_text(size = 18),
-    legend.text = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 18)
-  )
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 16),
+    axis.title.x = element_text(size = 18),
+    axis.title.y = element_text(size = 18),
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 18),
+    panel.background = element_rect(fill = "white", colour = NA),
+    plot.background = element_rect(fill = "white", colour = NA),
+    panel.grid.major = element_line(colour = "grey80"),
+    panel.grid.minor = element_line(colour = "grey90"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_blank()
+  ) 
 
 
 ## =============================================================================
@@ -187,14 +201,20 @@ ggplot2::ggplot(
     fill = "Metric",
     linetype = "|LFC|"
   ) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(
-    text = ggplot2::element_text(size = 14),
-    axis.text = ggplot2::element_text(size = 14),
-    axis.title = ggplot2::element_text(size = 16),
-    legend.text = ggplot2::element_text(size = 14),
-    legend.title = ggplot2::element_text(size = 15)
-  )
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 16),
+    axis.title.x = element_text(size = 18),
+    axis.title.y = element_text(size = 18),
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 18),
+    panel.background = element_rect(fill = "white", colour = NA),
+    plot.background = element_rect(fill = "white", colour = NA),
+    panel.grid.major = element_line(colour = "grey80"),
+    panel.grid.minor = element_line(colour = "grey90"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_blank()
+  ) 
 
 # Overall (all |lfc| pooled)
 cs_per_seed_all <- res_cs_long |>
@@ -232,14 +252,20 @@ ggplot2::ggplot(
     colour = "Method / metric",
     fill = "Method / metric"
   ) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(
-    text = ggplot2::element_text(size = 14),
-    axis.text = ggplot2::element_text(size = 14),
-    axis.title = ggplot2::element_text(size = 16),
-    legend.text = ggplot2::element_text(size = 14),
-    legend.title = ggplot2::element_text(size = 15)
-  )
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 16),
+    axis.title.x = element_text(size = 18),
+    axis.title.y = element_text(size = 18),
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 18),
+    panel.background = element_rect(fill = "white", colour = NA),
+    plot.background = element_rect(fill = "white", colour = NA),
+    panel.grid.major = element_line(colour = "grey80"),
+    panel.grid.minor = element_line(colour = "grey90"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_blank()
+  ) 
 
 
 ## =============================================================================
@@ -371,14 +397,14 @@ ggplot(plot_df, aes(x = epsilon, y = mean,
   geom_line() +
   geom_point(size = 1.5) +
   labs(x = expression(epsilon),
-       y = "Proportion of cells \n (mean \u00b1 SD across seeds)",
+       y = "Proportion of cells (mean \u00b1 SD across seeds)",
        colour = "Set size", fill = "Set size",
        linetype = "|LFC|") +
   theme_bw() +
   theme(
     axis.text = element_text(size = 16),
     axis.title.x = element_text(size = 18),
-    axis.title.y = element_text(size = 16),
+    axis.title.y = element_text(size = 18),
     legend.text = element_text(size = 16),
     legend.title = element_text(size = 18),
     panel.background = element_rect(fill = "white", colour = NA),
@@ -416,9 +442,17 @@ ggplot2::ggplot(
   ) +
   ggplot2::scale_x_continuous(breaks = seq(0, 1, 0.05)) +
   ggplot2::theme_bw() +
-  ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 16),
-    axis.title = ggplot2::element_text(size = 18),
-    legend.text = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 18)
-  )
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 16),
+    axis.title.x = element_text(size = 18),
+    axis.title.y = element_text(size = 18),
+    legend.text = element_text(size = 16),
+    legend.title = element_text(size = 18),
+    panel.background = element_rect(fill = "white", colour = NA),
+    plot.background = element_rect(fill = "white", colour = NA),
+    panel.grid.major = element_line(colour = "grey80"),
+    panel.grid.minor = element_line(colour = "grey90"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_blank()
+  ) 
