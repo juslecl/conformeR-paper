@@ -7,8 +7,7 @@ hvgs <- scran::getTopHVGs(dec, n = 5000)
 sce <- sce[hvgs, ]
 all_genes <- c("HIST3H2A", "MBP","SPATA13")
 gene_batch_size <- 7
-rownames(sce) <- rowData(sce)$gene
-
+rownames(sce) <- SingleCellExperiment::rowData(sce)$gene
 ################################################################################
 # analysis
 ################################################################################
@@ -97,7 +96,8 @@ chunk_results <- BiocParallel::bplapply(seq_along(gene_chunks), function(i) {
     nei_train_chunk,
     nei_cal_chunk,
     what=c("conf_selection","conf_clustering"),
-    alpha = 0.05
+    alpha = 0.05,
+    return_cq=TRUE
   )
   
   rm(
@@ -114,13 +114,18 @@ pred_set_all <- dplyr::bind_rows(chunk_results)
 saveRDS(pred_set_all, "pred_set_realdata.RDS")
 
 pred_set_all |> 
+  dplyr::mutate(
+    inside_cs = purrr::map(inside_cs, ~ colnames(pred_test) %in% .x),
+    inside_cc = purrr::map(inside_cc, ~ colnames(pred_test) %in% .x),
+    outside_cc = purrr::map(outside_cc, ~ colnames(pred_test) %in% .x)) |>
+  tidyr::unnest(c(inside_cs,inside_cc,outside_cc)) |>
   dplyr::group_by(gene) |> 
   dplyr::summarize(prop_empty=mean(inside_cc+outside_cc==0),
                    prop_singleton=mean(inside_cc+outside_cc==1),
                    prop_size2=mean(inside_cc+outside_cc==2),
                    conf_quantile=unique(conf_quantile))
 
-reducedDim(pred_test, "fit_al_umap")[,2] <- -reducedDim(pred_test, "fit_al_umap")[,2]
+SingleCellExperiment::reducedDim(pred_test, "fit_al_umap")[,2] <- -SingleCellExperiment::reducedDim(pred_test, "fit_al_umap")[,2]
 
 plot_cs <- conformeR::plotter_conformal_selection(list(fit_lemur=pred_test[all_genes,],nei_lemur=nei_test |> dplyr::filter(name %in% all_genes), conf_results=pred_set_all), all_genes)
 plot_cc <- conformeR::plotter_conformal_clustering(list(fit_lemur=pred_test[all_genes,],nei_lemur=nei_test |> dplyr::filter(name %in% all_genes), conf_results=pred_set_all), all_genes)
